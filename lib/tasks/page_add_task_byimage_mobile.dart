@@ -58,6 +58,7 @@ class _AddTaskPageMState extends State<AddTaskPageM> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Image.asset('assets/img-res/todo_guide.png'),
             ElevatedButton.icon(
                 icon: const Icon(Icons.photo_camera, size: 20),
                 label: const Text('이미지 선택'),
@@ -110,7 +111,7 @@ class _AddTaskPageMState extends State<AddTaskPageM> {
     });
 
     var apiUrl =
-        "https://proxy.cors.sh/https://mo58gefq0m.apigw.ntruss.com/custom/v1/18971/52eb23e2abfcf09a6fa33340f207ae64708a9d1da37de19958a8fcfa1d5c9b80/general";
+        "https://mo58gefq0m.apigw.ntruss.com/custom/v1/18971/52eb23e2abfcf09a6fa33340f207ae64708a9d1da37de19958a8fcfa1d5c9b80/general";
     var apiKey = dotenv.get("OCR_KEY");
 
     Map data = {
@@ -128,7 +129,6 @@ class _AddTaskPageMState extends State<AddTaskPageM> {
         headers: <String, String>{
           'Content-Type': 'application/json',
           'X-OCR-SECRET': apiKey,
-          'x-cors-api-key': dotenv.get("CORS_KEY")
         },
         body: json.encode(data));
 
@@ -233,7 +233,6 @@ class _AddTaskPageMState extends State<AddTaskPageM> {
           final data = Map<String, dynamic>.from(newTask);
           await taskDBS.create(data);
         }
-        ;
       }
     }
     if (context.mounted) Navigator.pop(context);

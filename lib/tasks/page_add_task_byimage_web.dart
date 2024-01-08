@@ -18,7 +18,6 @@ class AddTaskPageW extends StatefulWidget {
 class _AddTaskPageWState extends State<AddTaskPageW> {
   late var pickedImage;
   String img64 = '';
-  // final ImagePicker _picker = ImagePicker();
   var text = '';
   bool imageLoaded = false;
   bool taskParsed = false;
@@ -59,6 +58,8 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Image.asset('assets/img-res/todo_guide.png'),
+            const Padding(padding: EdgeInsets.only(top: 10)),
             ElevatedButton.icon(
                 icon: const Icon(Icons.photo_camera, size: 20),
                 label: const Text('이미지 선택'),
@@ -75,7 +76,6 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
                       decoration: const BoxDecoration(color: Colors.white),
                       margin: const EdgeInsets.only(bottom: 8),
                       height: 250,
-                      // child: Image.file(pickedImage, fit: BoxFit.cover),
                       child: Image.network(pickedImage, fit: BoxFit.cover),
                     ),
                   )
@@ -112,10 +112,7 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
       imageType = image.name.split('.').last;
     });
 
-    var apiUrl =
-        "https://proxy.cors.sh/https://mo58gefq0m.apigw.ntruss.com/custom/v1/18971/52eb23e2abfcf09a6fa33340f207ae64708a9d1da37de19958a8fcfa1d5c9b80/general";
     var apiKey = dotenv.get("OCR_KEY");
-
     Map data = {
       "images": [
         {"format": imageType, "name": "pickedImage", "data": img64, "url": null}
@@ -127,14 +124,9 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
       "version": "V2"
     };
 
-    var result = await http.post(Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-          'X-OCR-SECRET': apiKey,
-          'x-cors-api-key': dotenv.get("CORS_KEY")
-        },
-        body: json.encode(data));
-
+    var apiUrl =
+        "https://us-central1-jday-4df6b.cloudfunctions.net/callOCR?aK=$apiKey";
+    var result = await http.post(Uri.parse(apiUrl), body: json.encode(data));
     var resBody = jsonDecode(result.body);
 
     setState(() {

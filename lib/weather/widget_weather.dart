@@ -4,6 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'dart:developer';
 
 import 'package:jday/weather/weather_calcXY.dart';
 
@@ -74,7 +76,6 @@ class _WeatherWidgetState extends State<WeatherWidget> {
                         child: _weatherValue.containsKey('icon')
                             ? Image.asset(_weatherValue['icon'])
                             : const SizedBox(),
-                        // Image.asset(_weatherValue['icon'])),
                       ),
                     ),
                   ),
@@ -190,16 +191,14 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     var apiTime2 = '${time + 1}00';
 
     var apiUrlForecast1 =
-        "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=$apiKey&numOfRows=500&pageNo=1&base_date=$apiDate&base_time=1700&nx=$_gridX&ny=$_gridY&dataType=JSON";
-    var forecastResult1 = await http.get(Uri.parse(apiUrlForecast1),
-        headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+        "https://us-central1-jday-4df6b.cloudfunctions.net/getVilageFcst?apiKey=$apiKey&apiDate=$apiDate&baseTime=1700&gridX=$_gridX&gridY=$_gridY";
+    var forecastResult1 = await http.get(Uri.parse(apiUrlForecast1));
     var forecastResBody1 = jsonDecode(forecastResult1.body);
 
     if (forecastResBody1['response']['header']['resultCode'] == '03') {
       apiUrlForecast1 =
-          "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=$apiKey&numOfRows=500&pageNo=1&base_date=$apiDate1&base_time=2300&nx=$_gridX&ny=$_gridY&dataType=JSON";
-      forecastResult1 = await http.get(Uri.parse(apiUrlForecast1),
-          headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+          "https://us-central1-jday-4df6b.cloudfunctions.net/getVilageFcst?apiKey=$apiKey&apiDate=$apiDate1&baseTime=2300&gridX=$_gridX&gridY=$_gridY";
+      forecastResult1 = await http.get(Uri.parse(apiUrlForecast1));
       forecastResBody1 = jsonDecode(forecastResult1.body);
 
       forecastResBody1 = forecastResBody1['response']['body']['items']['item'];
@@ -228,25 +227,22 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     }
 
     var apiUrlForecast2 =
-        "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=$apiKey&numOfRows=500&pageNo=1&base_date=$apiDate&base_time=$apiTime&nx=$_gridX&ny=$_gridY&dataType=JSON";
-    var forecastResult2 = await http.get(Uri.parse(apiUrlForecast2),
-        headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+        "https://us-central1-jday-4df6b.cloudfunctions.net/getVilageFcst?apiKey=$apiKey&apiDate=$apiDate&baseTime=$apiTime&gridX=$_gridX&gridY=$_gridY";
+    var forecastResult2 = await http.get(Uri.parse(apiUrlForecast2));
     var forecastResBody2 = jsonDecode(forecastResult2.body);
 
     if (forecastResBody2['response']['header']['resultCode'] == '03') {
       if (time < 3) {
         apiTime = '2300';
         apiUrlForecast2 =
-            "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=$apiKey&numOfRows=500&pageNo=1&base_date=$apiDate1&base_time=$apiTime&nx=$_gridX&ny=$_gridY&dataType=JSON";
-        forecastResult2 = await http.get(Uri.parse(apiUrlForecast2),
-            headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+            "https://us-central1-jday-4df6b.cloudfunctions.net/getVilageFcst?apiKey=$apiKey&apiDate=$apiDate1&baseTime=$apiTime&gridX=$_gridX&gridY=$_gridY";
+        forecastResult2 = await http.get(Uri.parse(apiUrlForecast2));
         forecastResBody2 = jsonDecode(forecastResult2.body);
       } else {
         apiTime = '${apiTimeTmp - 3}00';
         apiUrlForecast2 =
-            "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=$apiKey&numOfRows=500&pageNo=1&base_date=$apiDate&base_time=$apiTime&nx=$_gridX&ny=$_gridY&dataType=JSON";
-        forecastResult2 = await http.get(Uri.parse(apiUrlForecast2),
-            headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+            "https://us-central1-jday-4df6b.cloudfunctions.net/getVilageFcst?apiKey=$apiKey&apiDate=$apiDate&baseTime=$apiTime&gridX=$_gridX&gridY=$_gridY";
+        forecastResult2 = await http.get(Uri.parse(apiUrlForecast2));
         forecastResBody2 = jsonDecode(forecastResult2.body);
       }
     }
@@ -273,17 +269,15 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     });
 
     var apiUrlCurrent =
-        "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=$apiKey&numOfRows=10&pageNo=1&base_date=$apiDate&base_time=$apiTime2&nx=$_gridX&ny=$_gridY&dataType=JSON";
-    var currentResult = await http.get(Uri.parse(apiUrlCurrent),
-        headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+        "https://us-central1-jday-4df6b.cloudfunctions.net/getUltraSrtNcst?apiKey=$apiKey&apiDate=$apiDate&baseTime=$apiTime2&gridX=$_gridX&gridY=$_gridY";
+    var currentResult = await http.get(Uri.parse(apiUrlCurrent));
     var currentResBody = jsonDecode(currentResult.body);
 
     if (currentResBody['response']['header']['resultCode'] == '03') {
       apiTime2 = '${time - 1}00';
       apiUrlCurrent =
-          "https://proxy.cors.sh/http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=$apiKey&numOfRows=10&pageNo=1&base_date=$apiDate&base_time=$apiTime2&nx=$_gridX&ny=$_gridY&dataType=JSON";
-      currentResult = await http.get(Uri.parse(apiUrlCurrent),
-          headers: {'x-cors-api-key': dotenv.get("CORS_KEY")});
+          "https://us-central1-jday-4df6b.cloudfunctions.net/getUltraSrtNcst?apiKey=$apiKey&apiDate=$apiDate&baseTime=$apiTime2&gridX=$_gridX&gridY=$_gridY";
+      currentResult = await http.get(Uri.parse(apiUrlCurrent));
       currentResBody = jsonDecode(currentResult.body);
     }
     currentResBody = currentResBody['response']['body']['items']['item'];
