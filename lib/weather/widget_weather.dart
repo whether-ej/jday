@@ -26,6 +26,8 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   Map<String, dynamic> _weatherValue = <String, dynamic>{};
   late final weatherInfo = getWeather();
 
+  bool locationSet = true;
+
   @override
   void initState() {
     super.initState();
@@ -47,19 +49,25 @@ class _WeatherWidgetState extends State<WeatherWidget> {
             IconButton(
               icon: const Icon(Icons.location_searching),
               onPressed: () {
+                setState((() {
+                  locationSet = false;
+                }));
                 getLocation();
               },
             ),
-            Text(
-              _addrText,
-              style: const TextStyle(fontSize: 14.0),
-            ),
+            locationSet
+                ? Text(
+                    _addrText,
+                    style: const TextStyle(fontSize: 14.0),
+                  )
+                : const Text(''),
           ],
         ),
         Container(
           padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
           child: FutureBuilder(
-            future: weatherInfo,
+            // future: weatherInfo,
+            future: getWeather(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
@@ -167,6 +175,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
       _addrText = addrText;
       _longX = resBody['documents'][0]['x'];
       _latY = resBody['documents'][0]['y'];
+      locationSet = true;
     });
 
     CalcXY curr = transfer(_longX, _latY);

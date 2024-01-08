@@ -81,18 +81,31 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
                   )
                 : Container(),
             const Padding(padding: EdgeInsets.only(top: 20)),
-            taskParsed
-                ? Flexible(
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _parsedTasks.keys.length,
-                        itemBuilder: ((ctx, idx) {
-                          return tasksListView(
-                              _parsedTasks.keys.elementAt(idx));
-                        })),
-                  )
-                : Container(),
+            FutureBuilder(
+                future: pickImage(),
+                builder: (context, snapshot) {
+                  if (imageLoaded) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.connectionState ==
+                            ConnectionState.done &&
+                        taskParsed) {
+                      return Flexible(
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _parsedTasks.keys.length,
+                              itemBuilder: ((ctx, idx) {
+                                return tasksListView(
+                                    _parsedTasks.keys.elementAt(idx));
+                              })));
+                    } else {
+                      return Container();
+                    }
+                  } else {
+                    return Container();
+                  }
+                })
           ],
         ),
       ),
