@@ -18,13 +18,26 @@ class AddTaskPageW extends StatefulWidget {
 class _AddTaskPageWState extends State<AddTaskPageW> {
   late var pickedImage;
   String img64 = '';
-  // final ImagePicker _picker = ImagePicker();
   var text = '';
   bool imageLoaded = false;
   bool taskParsed = false;
   late String imageType;
 
   var _parsedTasks = <String, List<String>>{};
+
+  late Future parsedInfo;
+  @override
+  void initState() {
+    super.initState();
+    parsedInfo = parseTasks();
+  }
+
+  ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(false);
+  void _onPickPress() async {
+    _isLoadingNotifier.value = true;
+    await pickImage();
+    _isLoadingNotifier.value = false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,15 +72,21 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ElevatedButton.icon(
-                icon: const Icon(Icons.photo_camera, size: 20),
-                label: const Text('이미지 선택'),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xff64ae64),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    )),
-                onPressed: pickImage),
+            Image.asset('assets/img-res/todo_guide.png'),
+            const Padding(padding: EdgeInsets.only(top: 10)),
+            ValueListenableBuilder<bool>(
+                valueListenable: _isLoadingNotifier,
+                builder: (context, isLoading, _) {
+                  return ElevatedButton.icon(
+                      icon: const Icon(Icons.photo_camera, size: 20),
+                      label: const Text('이미지 선택'),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff64ae64),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          )),
+                      onPressed: isLoading ? null : _onPickPress);
+                }),
             const Padding(padding: EdgeInsets.only(top: 10)),
             imageLoaded
                 ? Center(
@@ -75,24 +94,36 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
                       decoration: const BoxDecoration(color: Colors.white),
                       margin: const EdgeInsets.only(bottom: 8),
                       height: 250,
-                      // child: Image.file(pickedImage, fit: BoxFit.cover),
                       child: Image.network(pickedImage, fit: BoxFit.cover),
                     ),
                   )
                 : Container(),
             const Padding(padding: EdgeInsets.only(top: 20)),
-            taskParsed
-                ? Flexible(
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _parsedTasks.keys.length,
-                        itemBuilder: ((ctx, idx) {
-                          return tasksListView(
-                              _parsedTasks.keys.elementAt(idx));
-                        })),
-                  )
-                : Container(),
+            FutureBuilder(
+                future: parsedInfo,
+                builder: (context, snapshot) {
+                  if (imageLoaded) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.connectionState ==
+                            ConnectionState.done &&
+                        taskParsed) {
+                      return Flexible(
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _parsedTasks.keys.length,
+                              itemBuilder: ((ctx, idx) {
+                                return tasksListView(
+                                    _parsedTasks.keys.elementAt(idx));
+                              })));
+                    } else {
+                      return Container();
+                    }
+                  } else {
+                    return Container();
+                  }
+                })
           ],
         ),
       ),
@@ -111,36 +142,38 @@ class _AddTaskPageWState extends State<AddTaskPageW> {
       imageLoaded = true;
       imageType = image.name.split('.').last;
     });
+    await parseTasks();
+  }
 
-    var apiUrl =
-        "https://proxy.cors.sh/https://mo58gefq0m.apigw.ntruss.com/custom/v1/18971/52eb23e2abfcf09a6fa33340f207ae64708a9d1da37de19958a8fcfa1d5c9b80/general";
-    var apiKey = dotenv.get("OCR_KEY");
+  Future parseTasks() async {
+    if (imageLoaded) {
+      var apiKey = dotenv.get("OCR_KEY");
+      Map data = {
+        "images": [
+          {
+            "format": imageType,
+            "name": "pickedImage",
+            "data": img64,
+            "url": null
+          }
+        ],
+        "lang": "ko",
+        "requestId": "string",
+        "resultType": "string",
+        "timestamp": DateTime.now().millisecondsSinceEpoch,
+        "version": "V2"
+      };
 
-    Map data = {
-      "images": [
-        {"format": imageType, "name": "pickedImage", "data": img64, "url": null}
-      ],
-      "lang": "ko",
-      "requestId": "string",
-      "resultType": "string",
-      "timestamp": DateTime.now().millisecondsSinceEpoch,
-      "version": "V2"
-    };
+      var apiUrl =
+          "https://us-central1-jday-4df6b.cloudfunctions.net/callOCR?aK=$apiKey";
+      var result = await http.post(Uri.parse(apiUrl), body: json.encode(data));
+      var resBody = jsonDecode(result.body);
 
-    var result = await http.post(Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-          'X-OCR-SECRET': apiKey,
-          'x-cors-api-key': dotenv.get("CORS_KEY")
-        },
-        body: json.encode(data));
-
-    var resBody = jsonDecode(result.body);
-
-    setState(() {
-      _parsedTasks = parseText(resBody);
-      taskParsed = true;
-    });
+      setState(() {
+        _parsedTasks = parseText(resBody);
+        taskParsed = true;
+      });
+    }
   }
 
   Future _selectDate(key) async {
