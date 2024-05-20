@@ -29,7 +29,9 @@ Flutter로 구현한 일정관리 애플리케이션
     OCR 기능을 이용해 이미지에서 태스크 목록 추출 가능
     - 네이버 클라우드 플랫폼 CLOVA OCR API
       
-      <img width='300' src='https://github.com/whether-ej/flutter_jday/assets/76941890/445f904e-9a63-4093-b100-514cbe9d1995'> 현재 사진과 같이 `날짜 /n 태스크` 형식으로 작성해야 날짜 인식<br><br>
+      <img width='300' src='https://github.com/whether-ej/flutter_jday/assets/76941890/445f904e-9a63-4093-b100-514cbe9d1995'>
+      
+      현재 사진과 같이 `날짜 /n 태스크` 형식으로 작성할 경우 날짜 인식 가능<br><br>
 
 
 ---
