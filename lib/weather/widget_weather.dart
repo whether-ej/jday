@@ -22,9 +22,19 @@ class _WeatherWidgetState extends State<WeatherWidget> {
   late int _gridX;
   late int _gridY;
   Map<String, dynamic> _weatherValue = <String, dynamic>{};
-  late final weatherInfo = getWeather();
 
   bool locationSet = true;
+
+  late Future weatherInfo;
+  ValueNotifier<bool> _isLoadingNotifier = ValueNotifier(false);
+  void _onLocationPress() async {
+    _isLoadingNotifier.value = true;
+    setState((() {
+      locationSet = false;
+    }));
+    await getLocation();
+    _isLoadingNotifier.value = false;
+  }
 
   @override
   void initState() {
@@ -35,6 +45,8 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     _longX = 127.03312866105163;
     _gridX = 61;
     _gridY = 125;
+
+    weatherInfo = getWeather();
   }
 
   @override
@@ -44,15 +56,13 @@ class _WeatherWidgetState extends State<WeatherWidget> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            IconButton(
-              icon: const Icon(Icons.location_searching),
-              onPressed: () {
-                setState((() {
-                  locationSet = false;
-                }));
-                getLocation();
-              },
-            ),
+            ValueListenableBuilder<bool>(
+                valueListenable: _isLoadingNotifier,
+                builder: (context, isLoading, _) {
+                  return IconButton(
+                      icon: const Icon(Icons.location_searching),
+                      onPressed: isLoading ? null : _onLocationPress);
+                }),
             locationSet
                 ? Text(
                     _addrText,
@@ -64,8 +74,7 @@ class _WeatherWidgetState extends State<WeatherWidget> {
         Container(
           padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
           child: FutureBuilder(
-            // future: weatherInfo,
-            future: getWeather(),
+            future: weatherInfo,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
@@ -144,15 +153,19 @@ class _WeatherWidgetState extends State<WeatherWidget> {
     );
   }
 
-  void getLocation() async {
+  getLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       getAddress(position.longitude.toString(), position.latitude.toString());
-      getWeather();
+      setState(() {
+        weatherInfo = getWeather();
+      });
     } on Exception {
       getAddress(_longX.toString(), _latY.toString());
-      getWeather();
+      setState(() {
+        weatherInfo = getWeather();
+      });
     }
   }
 
