@@ -1,4 +1,4 @@
-# jday   <img width='25' src='https://github.com/whether-ej/flutter_jday/assets/76941890/961510c1-0e96-495b-9f8e-8f6e79a21088'> 
+# jday   <img width='25' src='https://github.com/whether-ej/jday/assets/76941890/67ca39a3-79fc-416f-8e9d-ef99d8c79c18'> 
 
 Flutter로 구현한 일정관리 애플리케이션
 
